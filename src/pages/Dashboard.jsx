@@ -182,10 +182,6 @@ const Dashboard = () => {
                 <p className="text-2xl font-bold text-green-700">{soilData.moisture}%</p>
               </div>
             </div>
-            
-            <p className="mt-6 text-green-600 italic">
-              "Our monitoring systems are the main key components of our systems."
-            </p>
           </div>
 
           {/* Alerts Card */}
@@ -258,10 +254,6 @@ const Dashboard = () => {
                 <p className="text-sm text-green-600 mt-1">{solarData.batteryLevel}% charged</p>
               </div>
             </div>
-            
-            <p className="mt-6 text-green-600 italic">
-              "We've used our main system to create new and more efficient products."
-            </p>
           </div>
 
           {/* Smart Disclosure Card */}
@@ -298,10 +290,6 @@ const Dashboard = () => {
                 <p className="text-lg font-medium text-green-700">{cropHealth.lastScan}</p>
               </div>
             </div>
-            
-            <p className="mt-6 text-green-600 italic">
-              "We can use our main system to create new and more efficient products."
-            </p>
           </div>
         </div>
 
