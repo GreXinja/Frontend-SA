@@ -3,13 +3,17 @@ import { Link } from 'react-router-dom';
 import { 
   FiSun, FiDroplet, FiThermometer, 
   FiAlertCircle, FiImage, FiBarChart2,
-  FiSettings, FiCalendar, FiLoader
+  FiSettings, FiCalendar, FiLoader,
+  FiUpload, FiCamera
 } from 'react-icons/fi';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     // Initialize animation library
@@ -51,6 +55,56 @@ const Dashboard = () => {
     growthStage: 'Vegetative',
     lastScan: '3 hours ago',
     healthScore: 78
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
+  const handlePaste = (e) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        setSelectedImage(blob);
+        setPreviewImage(URL.createObjectURL(blob));
+        break;
+      }
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!selectedImage) return;
+    
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', selectedImage);
+      
+      // Replace with your actual backend endpoint
+      const response = await fetch('http://your-python-backend/api/analyze', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        alert('Image analysis complete!');
+        // You can update the crop health data with the response
+        console.log('Analysis result:', result);
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   if (isLoading) {
@@ -290,6 +344,66 @@ const Dashboard = () => {
                 <p className="text-lg font-medium text-green-700">{cropHealth.lastScan}</p>
               </div>
             </div>
+          </div>
+
+          {/* New Image Upload Card */}
+          <div 
+            className="bg-white rounded-xl shadow-sm border border-green-100 p-6 hover:shadow-md transition-all"
+            data-aos="fade-up"
+            data-aos-delay="400"
+            onPaste={handlePaste}
+          >
+            <h2 className="text-xl font-semibold flex items-center text-green-700 mb-6">
+              <FiCamera className="text-blue-600 mr-2" />
+              Crop Image Analysis
+            </h2>
+            
+            {previewImage ? (
+              <div className="mb-4">
+                <img 
+                  src={previewImage} 
+                  alt="Preview" 
+                  className="w-full h-48 object-cover rounded-lg mb-2"
+                />
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => {
+                      setSelectedImage(null);
+                      setPreviewImage(null);
+                    }}
+                    className="text-sm text-red-600 hover:underline"
+                  >
+                    Remove
+                  </button>
+                  <button 
+                    onClick={uploadImage}
+                    disabled={isUploading}
+                    className={`text-sm ${isUploading ? 'text-gray-400' : 'text-green-600 hover:underline'}`}
+                  >
+                    {isUploading ? 'Analyzing...' : 'Analyze Image'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-green-300 rounded-lg p-6 text-center mb-4">
+                <FiUpload className="text-3xl text-green-500 mx-auto mb-2" />
+                <p className="text-green-600 mb-2">Upload or paste crop image</p>
+                <label className="cursor-pointer text-sm text-white bg-green-600 px-3 py-1 rounded hover:bg-green-700">
+                  Browse Files
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={handleImageChange}
+                  />
+                </label>
+                <p className="text-xs text-gray-500 mt-2">Supports JPG, PNG (Max 5MB)</p>
+              </div>
+            )}
+            
+            <p className="text-xs text-gray-500">
+              Tip: You can also paste (Ctrl+V) an image directly
+            </p>
           </div>
         </div>
 
